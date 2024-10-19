@@ -81,3 +81,67 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+# Function to collect health data from the user
+def collect_health_data():
+    heart_rate = int(input("Enter your heart rate (bpm): "))
+    blood_pressure = int(input("Enter your blood pressure (systolic): "))
+    body_temperature = float(input("Enter your body temperature (°C): "))
+    
+    # New data fields: blood oxygen level and weight
+    blood_oxygen = float(input("Enter your blood oxygen level (%): "))
+    weight = float(input("Enter your weight (kg): "))
+    
+    # Return data as a dictionary
+    return {
+        'Heart Rate': heart_rate,
+        'Blood Pressure': blood_pressure,
+        'Body Temperature': body_temperature,
+        'Blood Oxygen Level': blood_oxygen,
+        'Weight': weight
+    }
+
+#Machine Learning Model (Logistic Regression) for Risk Prediction
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import StandardScaler
+
+def train_model_and_predict(df, user_data):
+    if len(df) > 1:
+        features = df[["Heart Rate", "Blood Pressure", "Body Temperature", "Blood Oxygen Level", "Weight"]]
+        target = df["Risk Level"]
+        
+        X_train, X_test, y_train, y_test = train_test_split(features, target, test_size=0.2, random_state=42)
+        
+        scaler = StandardScaler()
+        X_train_scaled = scaler.fit_transform(X_train)
+        X_test_scaled = scaler.transform(X_test)
+        
+        model = LogisticRegression()
+        model.fit(X_train_scaled, y_train)
+        
+        user_data_scaled = scaler.transform([list(user_data.values())])
+        
+        risk_prediction = model.predict(user_data_scaled)
+        return risk_prediction[0]
+    else:
+        print("Not enough data to train the model. Using simple threshold-based risk prediction.")
+        return simple_risk_prediction(user_data)
+
+#Advanced Visualizations
+# Histogram of Heart Rate, Blood Pressure, and Body Temperature
+plt.subplot(1, 2, 2)
+plt.hist(df["Heart Rate"], bins=10, alpha=0.7, label="Heart Rate")
+plt.hist(df["Blood Pressure"], bins=10, alpha=0.7, label="Blood Pressure")
+plt.hist(df["Body Temperature"], bins=10, alpha=0.7, label="Body Temperature")
+plt.xlabel("Measurements")
+plt.ylabel("Frequency")
+plt.title("Histogram of Health Measurements")
+plt.legend()
+
+# Scatter plot: Heart Rate vs. Weight
+plt.scatter(df["Heart Rate"], df["Weight"], label="Heart Rate vs. Weight", c='r')
+plt.xlabel("Heart Rate (bpm)")
+plt.ylabel("Weight (kg)")
+plt.title("Scatter Plot of Heart Rate vs. Weight")
+plt.show()
